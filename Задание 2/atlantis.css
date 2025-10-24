@@ -1,0 +1,248 @@
+/******************************************************************* primary elements */
+
+body { 
+	background-color: #000;
+	color: #ccc;
+	margin: 0;
+	padding: 0;
+	text-align: center;
+	font-family: georgia, palatino, times, serif;
+}
+
+p { 
+	font: 11pt/16pt georgia, palatino, times, serif; 
+	text-align: left;
+}
+
+/******************************************************************* primary hyperlink styling */
+
+a:link { 
+	font-weight: normal; 
+	text-decoration: none;
+	background-color: transparent;
+	color: #bcf;
+}
+
+a:visited { 
+	font-weight: normal; 
+	text-decoration: none;
+	background-color: transparent;
+	color: #bde;
+}
+
+a:hover, a:active { 
+	text-decoration: underline;
+	background-color: transparent;
+	color: #fff;
+}
+
+/******************************************************************* body content */
+
+.page-wrapper { 
+	position: relative;
+	margin: 0 auto;
+	padding: 1px;
+	font: 8pt/12pt georgia, palatino, times, serif;
+	color: #ddd; 
+	background: #000 url(graphics/background.jpg) no-repeat top left;
+	width: 750px;
+}
+
+.header {
+  position: relative;
+  margin: 0 auto;
+  padding: 20px 0;
+  text-align: center;
+  color: #fff;
+  font-size: 24px;
+  border-bottom: 1px solid #fff;
+}
+
+.header h1 {
+  margin: 0;
+  font: bold 24pt georgia, palatino, times, serif;
+  color: #fff;
+}
+
+/* Блок "Область изображения + персональные данные" */
+.personal-data-container {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  margin: 2em 0;
+}
+
+.personal-data-container .photo-section {
+  flex: 0 0 35%;
+  text-align: center;
+}
+
+.personal-data-container .info-section {
+  flex: 1;
+}
+
+.personal-data-container h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 16pt;
+  color: #fff;
+}
+
+/* === Ключевое изменение: фон теперь ТОЛЬКО у dl === */
+.personal-data-container dl {
+  margin: 0;
+  padding: 15px;
+  background-color: rgba(0, 0, 0, 0.7); /* полупрозрачный чёрный фон */
+  border-radius: 8px;
+  color: #ddd;
+  font-size: 10pt;
+  line-height: 1.6;
+}
+
+.personal-data-container dt {
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: #fff;
+}
+
+.personal-data-container dd {
+  margin: 0 0 15px 15px;
+  color: #ccc;
+}
+
+/* Общие стили для всех секций (контакты, навыки, описание) */
+.section {
+  margin-top: 20px;
+  margin-left: 218px;
+  margin-bottom: 10px;
+  margin-right: 39px;
+  padding: 10px;
+  border: 1px dashed #fff;
+  color: #ddd;
+  font: 8pt/12pt georgia, palatino, times, serif;
+}
+
+.section h2 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  padding: 1px 0 3px 0;
+  background-color: transparent;
+  font: 14pt georgia, palatino, times, serif;
+  font-weight: normal;
+  text-align: left;
+  color: #fff;
+  border-top: 1px solid #fff;
+  border-bottom: 1px solid #fff;
+}
+
+.section ol,
+.section ul {
+  margin: 10px 0;
+  padding-left: 20px;
+  color: #ddd;
+  line-height: 1.5;
+}
+
+.section ol li {
+  margin-bottom: 5px;
+}
+
+/* Блок "Copyrights" */
+.copyrights {
+  margin-top: 30px;
+  padding: 10px;
+  text-align: center;
+  color: #999;
+  font-size: 8pt;
+  border-top: 1px solid #555;
+}
+
+/******************************************************************* Неиспользуемые блоки из оригинального стиля (требование задания) */
+
+footer { 
+	margin-top: 30px;
+	margin-left: 0;
+	margin-bottom: 30px;
+	margin-right: 0;
+	text-align: center; 
+	background-color: transparent;
+	color: #fff;
+	border-top: 1px solid #fff;
+	border-bottom: 1px solid #fff;
+}
+
+footer a:link,
+footer a:visited { 
+	background-color: transparent;
+	margin-left: 10px;
+	margin-right: 10px; 
+}
+
+.sidebar {
+	position: absolute;
+	margin: 0;
+	padding: 0;
+	top: 435px; 
+	left: 50px;
+	width: 150px;
+	text-align: left;
+}
+
+.sidebar h3.select { 
+	background: transparent url(graphics/linkhead-select.jpg) no-repeat top left; 
+	margin: 0 0 0 0; width: 150px; height: 21px;
+	text-indent: 100%;
+	white-space: nowrap;
+	overflow: hidden;
+}
+
+.sidebar h3.archives { 
+	background: transparent url(graphics/linkhead-archives.jpg) no-repeat top left; 
+	margin: 10px 0 0 0; width: 150px; height: 21px;
+	text-indent: 100%;
+	white-space: nowrap;
+	overflow: hidden;
+}
+
+.sidebar h3.resources { 
+	background: transparent url(graphics/linkhead-resources.jpg) no-repeat top left; 
+	margin: 10px 0 0 0; width: 150px; height: 21px;
+	text-indent: 100%;
+	white-space: nowrap;
+	overflow: hidden;
+}
+
+.sidebar ul {
+	margin-top: 0;
+	margin-bottom: 10px;
+	margin-left: 10px;
+	margin-right: 0;
+	padding: 0;
+}
+
+.sidebar li {
+	line-height: 2.5ex; 
+	list-style-type: none;
+	background: transparent url(graphics/cr1.gif) no-repeat top center; 
+	display: block; 
+	padding-top: 5px; 
+	margin-bottom: 5px;
+}
+
+.design-selection li,
+#lfavorites li {
+	background: url(graphics/docbullet.gif) no-repeat 0 7px;
+	padding-left: 11px;
+}
+
+.design-selection a,
+#lfavorites a {
+	display: block;
+	text-transform: lowercase;
+}
+
+.design-selection a.designer-name,
+#lfavorites a.designer-name {
+	display: inline;
+	text-transform: none;
+}
