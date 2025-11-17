@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>index02 - v-on</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+  <div id="app">
+    <input 
+      type="text" 
+      @focus="isFocused = true" 
+      @blur="isFocused = false" 
+      @keydown.ctrl.s.prevent="handleCtrlS" 
+      placeholder="Нажмите Ctrl+S..."
+    >
+  </div>
+
+  <script>
+    const { createApp, ref } = Vue;
+
+    createApp({
+      setup() {
+        const isFocused = ref(false);
+
+        const handleCtrlS = () => {
+          if (isFocused.value) {
+            alert('Сохранение возможно по нажатии сочетания клавиш «Ctrl» + «Click»');
+          }
+        };
+
+        return {
+          isFocused,
+          handleCtrlS
+        };
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>
