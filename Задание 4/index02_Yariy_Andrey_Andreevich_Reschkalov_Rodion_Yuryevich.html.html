@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>index02 - v-on</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+  <div id="app">
+    <input 
+      type="text" 
+      @keydown="onKeydown"
+      @mousedown="onMouseDown"
+      placeholder="Нажмите Ctrl+S..."
+    >
+  </div>
+
+  <script>
+    const { createApp } = Vue;
+
+    createApp({
+      setup() {
+        const onKeydown = (event) => {
+          // Проверяем: Ctrl + S
+          if (event.ctrlKey && (event.key === 's' || event.key === 'S')) {
+            event.preventDefault(); // Отменяем стандартное сохранение
+            alert('Сохранение возможно по нажатии сочетания клавиш «Ctrl» + «Click»');
+          }
+        };
+
+        const onMouseDown = (event) => {
+          // Проверяем: Ctrl + левая кнопка мыши (button === 0)
+          if (event.ctrlKey && event.button === 0) {
+            event.preventDefault();
+            
+            // Сохраняем текущую страницу как HTML-файл
+            const html = document.documentElement.outerHTML;
+            const blob = new Blob([html], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'index02_Yariy_Andrey_Andreevich_Reschkalov_Rodion_Yuryevich.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+          }
+        };
+
+        return {
+          onKeydown,
+          onMouseDown
+        };
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>

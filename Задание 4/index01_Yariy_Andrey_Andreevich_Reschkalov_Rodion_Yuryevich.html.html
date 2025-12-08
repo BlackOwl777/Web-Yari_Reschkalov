@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>index01 - v-bind</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+  <div id="app">
+    <img 
+      ref="imageRef"
+      :src="imageSrc" 
+      :height="imageHeight" 
+      :style="{ border: imageBorder }" 
+      alt="JavaScript Logo"
+    >
+    <!-- Вместо v-if используем связывание стиля display -->
+    <div class="tooltip" :style="{ display: tooltipDisplay }">
+      {{ imageName }}
+    </div>
+  </div>
+
+  <script>
+    const { createApp, ref, onMounted } = Vue;
+
+    createApp({
+      setup() {
+        // Реактивные переменные
+        const imageSrc = ref('javascript-logo.png');
+        const imageHeight = ref('200');
+        const imageBorder = ref('5px solid black');
+        const imageName = ref('javascript-logo.png');
+        const tooltipDisplay = ref('none'); // 'block' или 'none'
+        const imageRef = ref(null);
+
+        // Обработчики событий (чистый JavaScript)
+        const showTooltip = () => {
+          tooltipDisplay.value = 'block';
+        };
+        
+        const hideTooltip = () => {
+          tooltipDisplay.value = 'none';
+        };
+
+        // Настройка обработчиков после монтирования
+        onMounted(() => {
+          const img = imageRef.value;
+          if (img) {
+            img.addEventListener('mouseenter', showTooltip);
+            img.addEventListener('mouseleave', hideTooltip);
+          }
+        });
+
+        return {
+          imageSrc,
+          imageHeight,
+          imageBorder,
+          imageName,
+          tooltipDisplay,
+          imageRef
+        };
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>

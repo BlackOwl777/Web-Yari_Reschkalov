@@ -1,0 +1,205 @@
+<!DOCTYPE html> 
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>index04 - v-if</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <style>
+    table {
+      width: 100%;
+      table-layout: fixed;
+      height: 300px;
+      margin-bottom: 10px;
+      border-collapse: collapse;
+    }
+    td {
+      border: 1px solid #000;
+      padding: 10px;
+      text-align: center;
+      vertical-align: middle;
+    }
+    .active {
+      background-color: #f0f8ff;
+    }
+    input {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="app" tabindex="0">
+    <table>
+      <tr>
+        <td :class="{ active: isActive(0, 0) }" :style="cellStyle(0, 0)">
+          <span v-if="isActive(0, 0)">{{ text }}</span>
+        </td>
+        <td :class="{ active: isActive(0, 1) }" :style="cellStyle(0, 1)">
+          <span v-if="isActive(0, 1)">{{ text }}</span>
+        </td>
+        <td :class="{ active: isActive(0, 2) }" :style="cellStyle(0, 2)">
+          <span v-if="isActive(0, 2)">{{ text }}</span>
+        </td>
+      </tr>
+      <tr>
+        <td :class="{ active: isActive(1, 0) }" :style="cellStyle(1, 0)">
+          <span v-if="isActive(1, 0)">{{ text }}</span>
+        </td>
+        <td :class="{ active: isActive(1, 1) }" :style="cellStyle(1, 1)">
+          <span v-if="isActive(1, 1)">{{ text }}</span>
+        </td>
+        <td :class="{ active: isActive(1, 2) }" :style="cellStyle(1, 2)">
+          <span v-if="isActive(1, 2)">{{ text }}</span>
+        </td>
+      </tr>
+    </table>
+    <input 
+      type="text" 
+      v-model="text" 
+      placeholder="Введите текст"
+      @keydown.enter="onEnter"
+    >
+  </div>
+
+  <script>
+    const { createApp, ref } = Vue;
+
+    createApp({
+      setup() {
+        const text = ref('');
+        const currentCell = ref({ row: 0, col: 1 }); // Начальная ячейка — центр верхней строки
+        const hAlign = ref('center'); // 'left' → 'center' → 'right'
+        const vAlign = ref('middle'); // 'top' → 'middle' → 'bottom'
+        
+        // Устанавливаем фокус на приложение при загрузке
+        const appElement = document.getElementById('app');
+        if (appElement) {
+          setTimeout(() => {
+            appElement.focus();
+          }, 100);
+        }
+
+        // Определяет, в какой ячейке отображать текст
+        const isActive = (row, col) => {
+          return currentCell.value.row === row && currentCell.value.col === col;
+        };
+
+        // Стиль для ячейки
+        const cellStyle = (row, col) => {
+          if (!isActive(row, col)) return {};
+          return {
+            textAlign: hAlign.value,
+            verticalAlign: vAlign.value
+          };
+        };
+
+        // Обработка нажатий клавиш стрелок
+        const handleKeydown = (event) => {
+          // Блокируем стандартное поведение только для клавиш стрелок
+          if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) {
+            event.preventDefault();
+          }
+          
+          switch (event.key) {
+            case 'ArrowLeft':
+              // Обработка циклического выравнивания по горизонтали влево
+              if (hAlign.value === 'left') {
+                // Попытка выйти влево — переход в предыдущую ячейку
+                if (currentCell.value.col > 0) {
+                  currentCell.value.col--;
+                  hAlign.value = 'right'; // После перехода — выравнивание по правому краю
+                }
+              } else if (hAlign.value === 'center') {
+                hAlign.value = 'left';
+              } else if (hAlign.value === 'right') {
+                hAlign.value = 'center';
+              }
+              break;
+
+            case 'ArrowRight':
+              // Обработка циклического выравнивания по горизонтали вправо
+              if (hAlign.value === 'right') {
+                // Завершён цикл — переход вправо
+                if (currentCell.value.col < 2) {
+                  currentCell.value.col++;
+                  hAlign.value = 'left';
+                }
+              } else if (hAlign.value === 'center') {
+                hAlign.value = 'right';
+              } else if (hAlign.value === 'left') {
+                hAlign.value = 'center';
+              }
+              break;
+
+            case 'ArrowUp':
+              // Обработка циклического выравнивания по вертикали вверх
+              if (vAlign.value === 'top') {
+                // Попытка выйти вверх — переход в предыдущую строку
+                if (currentCell.value.row > 0) {
+                  currentCell.value.row--;
+                  vAlign.value = 'bottom';
+                }
+              } else if (vAlign.value === 'middle') {
+                vAlign.value = 'top';
+              } else if (vAlign.value === 'bottom') {
+                vAlign.value = 'middle';
+              }
+              break;
+
+            case 'ArrowDown':
+              // Обработка циклического выравнивания по вертикали вниз
+              if (vAlign.value === 'bottom') {
+                // Завершён цикл — переход вниз
+                if (currentCell.value.row < 1) {
+                  currentCell.value.row++;
+                  vAlign.value = 'top';
+                }
+              } else if (vAlign.value === 'middle') {
+                vAlign.value = 'bottom';
+              } else if (vAlign.value === 'top') {
+                vAlign.value = 'middle';
+              }
+              break;
+          }
+        };
+
+        // Обработка нажатия Enter в поле ввода
+        const onEnter = (event) => {
+          setTimeout(() => {
+            document.getElementById('app').focus();
+          }, 50);
+        };
+
+        // Добавляем обработчик клавиш непосредственно к элементу приложения
+        const registerKeyHandler = () => {
+          const appElement = document.getElementById('app');
+          if (appElement) {
+            appElement.addEventListener('keydown', handleKeydown);
+          }
+        };
+
+        // Регистрируем обработчик после монтирования компонента
+        const mounted = () => {
+          registerKeyHandler();
+        };
+
+        return {
+          text,
+          currentCell,
+          hAlign,
+          vAlign,
+          isActive,
+          cellStyle,
+          onEnter,
+          mounted
+        };
+      },
+      mounted() {
+        this.mounted();
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>

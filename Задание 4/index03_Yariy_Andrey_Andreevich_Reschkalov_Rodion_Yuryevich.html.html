@@ -1,0 +1,122 @@
+<!DOCTYPE html> 
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>index03 - v-model</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+  <div id="app" tabindex="0">
+    <div class="slider-container">
+      <label for="red">Красный:</label>
+      <input id="red" type="range" min="0" max="255" step="5" v-model.number="red" />
+      <span>R: {{ red }}</span>
+    </div>
+    
+    <div class="slider-container">
+      <label for="green">Зеленый:</label>
+      <input id="green" type="range" min="0" max="255" step="5" v-model.number="green" />
+      <span>G: {{ green }}</span>
+    </div>
+    
+    <div class="slider-container">
+      <label for="blue">Синий:</label>
+      <input id="blue" type="range" min="0" max="255" step="5" v-model.number="blue" />
+      <span>B: {{ blue }}</span>
+    </div>
+
+    <p :style="textStyle">
+      Цветной текст
+    </p>
+  </div>
+
+  <script>
+    const { createApp, ref, computed, onMounted, onUnmounted } = Vue;
+
+    createApp({
+      setup() {
+        const red = ref(125);
+        const green = ref(125);
+        const blue = ref(125);
+        
+        // Вычисляемое свойство для стиля текста
+        const textStyle = computed(() => {
+          return {
+            color: `rgb(${red.value}, ${green.value}, ${blue.value})`,
+            textAlign: 'center'
+          };
+        });
+
+        // Универсальный обработчик клавиш
+        const handleKeydown = (event) => {
+          // Блокируем стандартное поведение для всех обрабатываемых комбинаций
+          if (
+            (event.ctrlKey && ['r', 'g', 'b', 's'].includes(event.key.toLowerCase())) ||
+            (event.key.toLowerCase() === 'r' || event.key.toLowerCase() === 'g' || event.key.toLowerCase() === 'b')
+          ) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+          
+          const key = event.key.toLowerCase();
+          
+          // Обработка комбинации Ctrl+S
+          if (event.ctrlKey && key === 's') {
+            alert('Сохранение возможно по нажатии сочетания клавиш «Ctrl» + «Click»');
+            return;
+          }
+          
+          // Обработка комбинаций с Ctrl
+          if (event.ctrlKey) {
+            if (key === 'r' && red.value > 0) red.value -= 5;
+            if (key === 'g' && green.value > 0) green.value -= 5;
+            if (key === 'b' && blue.value > 0) blue.value -= 5;
+          } 
+          // Обработка простых клавиш без модификаторов
+          else if (!event.ctrlKey && !event.altKey && !event.metaKey && !event.shiftKey) {
+            if (key === 'r' && red.value < 255) red.value += 5;
+            if (key === 'g' && green.value < 255) green.value += 5;
+            if (key === 'b' && blue.value < 255) blue.value += 5;
+          }
+        };
+
+        // Установка и удаление глобального слушателя событий
+        onMounted(() => {
+          document.addEventListener('keydown', handleKeydown);
+          // Устанавливаем фокус на приложение
+          document.getElementById('app').focus();
+        });
+
+        onUnmounted(() => {
+          document.removeEventListener('keydown', handleKeydown);
+        });
+
+        return {
+          red,
+          green,
+          blue,
+          textStyle
+        };
+      }
+    }).mount('#app');
+  </script>
+  
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    .slider-container {
+      margin: 15px 0;
+    }
+    p {
+      margin-top: 30px;
+      font-size: 24px;
+      font-weight: bold;
+    }
+    #app {
+      outline: none; /* Убираем контур при фокусе */
+    }
+  </style>
+</body>
+</html>
