@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5.1 - Lifecycle Hooks (Хуки жизненного цикла)</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #42b983;
+            text-align: center;
+        }
+        .lifecycle-diagram {
+            background: #f9f9f9;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            border: 2px solid #42b983;
+        }
+        .lifecycle-diagram h2 {
+            color: #35495e;
+            text-align: center;
+        }
+        .lifecycle-stages {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .stage {
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 5px solid;
+            background: white;
+        }
+        .stage.beforeCreate { border-left-color: #e74c3c; }
+        .stage.created { border-left-color: #3498db; }
+        .stage.beforeMount { border-left-color: #9b59b6; }
+        .stage.mounted { border-left-color: #2ecc71; }
+        .stage.beforeUpdate { border-left-color: #f39c12; }
+        .stage.updated { border-left-color: #e67e22; }
+        .stage.beforeDestroy { border-left-color: #c0392b; }
+        .stage.destroyed { border-left-color: #7f8c8d; }
+        .stage.activated { border-left-color: #16a085; }
+        .stage.deactivated { border-left-color: #27ae60; }
+        .stage.errorCaptured { border-left-color: #e74c3c; }
+        .log-container {
+            background: #263238;
+            color: #aed581;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin: 15px 0;
+        }
+        .log-entry {
+            margin: 5px 0;
+            padding: 8px;
+            border-radius: 3px;
+        }
+        .log-entry.beforeCreate { background: rgba(231, 76, 60, 0.2); }
+        .log-entry.created { background: rgba(52, 152, 219, 0.2); }
+        .log-entry.beforeMount { background: rgba(155, 89, 182, 0.2); }
+        .log-entry.mounted { background: rgba(46, 204, 113, 0.2); }
+        .log-entry.beforeUpdate { background: rgba(243, 156, 18, 0.2); }
+        .log-entry.updated { background: rgba(230, 126, 34, 0.2); }
+        .log-entry.beforeDestroy { background: rgba(192, 57, 43, 0.2); }
+        .log-entry.destroyed { background: rgba(127, 140, 140, 0.2); }
+        .log-entry.activated { background: rgba(22, 160, 133, 0.2); }
+        .log-entry.deactivated { background: rgba(39, 174, 96, 0.2); }
+        .log-entry.errorCaptured { background: rgba(231, 76, 60, 0.3); }
+        .controls {
+            margin: 20px 0;
+            text-align: center;
+        }
+        button {
+            background-color: #42b983;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #35a372;
+        }
+        button.danger {
+            background-color: #e74c3c;
+        }
+        button.danger:hover {
+            background-color: #c0392b;
+        }
+        .demo-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+        .demo-section h2 {
+            color: #35495e;
+            margin-top: 0;
+        }
+        input {
+            padding: 10px;
+            margin: 10px 5px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .counter {
+            font-size: 24px;
+            font-weight: bold;
+            color: #42b983;
+            text-align: center;
+            padding: 20px;
+            background: #e8f5e9;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .keep-alive-demo {
+            border: 2px dashed #42b983;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .tab {
+            padding: 10px 20px;
+            background: #ddd;
+            border: none;
+            border-radius: 5px 5px 0 0;
+            cursor: pointer;
+        }
+        .tab.active {
+            background: #42b983;
+            color: white;
+        }
+        .tab-content {
+            padding: 20px;
+            background: white;
+            border: 2px solid #42b983;
+            border-radius: 0 5px 5px 5px;
+            min-height: 100px;
+        }
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <h1>5.1 - Lifecycle Hooks (Хуки жизненного цикла) Vue.js 2.x</h1>
+            <p style="text-align: center; color: #666;">Особое внимание: демонстрация activated/deactivated</p>
+
+            <div class="lifecycle-diagram">
+                <h2>Схема жизненного цикла Vue.js 2.x</h2>
+                <div class="lifecycle-stages">
+                    <div class="stage beforeCreate">
+                        <strong>1. beforeCreate</strong> - Вызывается до инициализации экземпляра
+                    </div>
+                    <div class="stage created">
+                        <strong>2. created</strong> - Вызывается после создания экземпляра
+                    </div>
+                    <div class="stage beforeMount">
+                        <strong>3. beforeMount</strong> - Вызывается перед монтированием DOM
+                    </div>
+                    <div class="stage mounted">
+                        <strong>4. mounted</strong> - Вызывается после монтирования DOM
+                    </div>
+                    <div class="stage beforeUpdate">
+                        <strong>5. beforeUpdate</strong> - Вызывается перед обновлением DOM
+                    </div>
+                    <div class="stage updated">
+                        <strong>6. updated</strong> - Вызывается после обновления DOM
+                    </div>
+                    <div class="stage activated">
+                        <strong>7. activated</strong> - Вызывается при активации компонента (keep-alive)
+                    </div>
+                    <div class="stage deactivated">
+                        <strong>8. deactivated</strong> - Вызывается при деактивации компонента (keep-alive)
+                    </div>
+                    <div class="stage beforeDestroy">
+                        <strong>9. beforeDestroy</strong> - Вызывается перед уничтожением экземпляра
+                    </div>
+                    <div class="stage destroyed">
+                        <strong>10. destroyed</strong> - Вызывается после уничтожения экземпляра
+                    </div>
+                    <div class="stage errorCaptured">
+                        <strong>11. errorCaptured</strong> - Вызывается при перехвате ошибки
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button @click="clearLogs">Очистить логи</button>
+                <button @click="triggerUpdate">Обновить данные</button>
+                <button class="danger" @click="destroyComponent" v-if="!isDestroyed">Уничтожить компонент</button>
+                <button @click="recreateComponent" v-if="isDestroyed">Воссоздать компонент</button>
+            </div>
+
+            <div class="demo-section" v-if="!isDestroyed">
+                <h2>Демонстрация работы хуков</h2>
+                <div>
+                    <label>Введите текст: </label>
+                    <input v-model="message" placeholder="Введите сообщение">
+                </div>
+                <div class="counter">
+                    Счётчик: {{ counter }}
+                </div>
+                <div>
+                    <button @click="incrementCounter">Увеличить счётчик</button>
+                    <button @click="decrementCounter">Уменьшить счётчик</button>
+                </div>
+                <div class="info-box">
+                    <strong>Текущее сообщение:</strong> {{ message || '(пусто)' }}
+                </div>
+            </div>
+
+            <div class="demo-section" v-if="isDestroyed">
+                <h2>Компонент уничтожен</h2>
+                <p>Компонент был уничтожен. Нажмите "Воссоздать компонент" для повторной инициализации.</p>
+            </div>
+
+            <div class="keep-alive-demo">
+                <h2>Демонстрация activated/deactivated (keep-alive)</h2>
+                <div class="info-box">
+                    <strong>Примечание:</strong> Для демонстрации activated/deactivated используется компонент с keep-alive.
+                    Переключение между вкладками активирует/деактивирует компоненты.
+                </div>
+                <div class="tabs">
+                    <button 
+                        class="tab" 
+                        :class="{ active: activeTab === 'tab1' }"
+                        @click="activeTab = 'tab1'"
+                    >
+                        Вкладка 1
+                    </button>
+                    <button 
+                        class="tab" 
+                        :class="{ active: activeTab === 'tab2' }"
+                        @click="activeTab = 'tab2'"
+                    >
+                        Вкладка 2
+                    </button>
+                </div>
+                <div class="tab-content">
+                    <keep-alive>
+                        <component :is="activeTab"></component>
+                    </keep-alive>
+                </div>
+            </div>
+
+            <div class="demo-section">
+                <h2>Лог вызовов хуков жизненного цикла</h2>
+                <div class="log-container" id="logContainer">
+                    <div 
+                        v-for="entry in lifecycleLog" 
+                        :key="entry.id" 
+                        class="log-entry" 
+                        :class="entry.hook"
+                    >
+                        [{{ entry.timestamp }}] {{ entry.message }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Компонент для вкладки 1
+        Vue.component('tab1', {
+            template: '<div><h3>Содержимое вкладки 1</h3><p>Это компонент вкладки 1. При переключении вкладок будет вызываться activated/deactivated.</p></div>',
+            mounted() {
+                // При первом монтировании также вызываем activated
+                var self = this;
+                setTimeout(function() {
+                    if (self.$root && self.$root.addLifecycleLog) {
+                        self.$root.addLifecycleLog('activated', 'Компонент Tab1 активирован (activated) - первое монтирование');
+                    }
+                }, 100);
+            },
+            activated() {
+                var self = this;
+                setTimeout(function() {
+                    if (self.$root && self.$root.addLifecycleLog) {
+                        self.$root.addLifecycleLog('activated', 'Компонент Tab1 активирован (activated)');
+                    }
+                }, 0);
+            },
+            deactivated() {
+                var self = this;
+                setTimeout(function() {
+                    if (self.$root && self.$root.addLifecycleLog) {
+                        self.$root.addLifecycleLog('deactivated', 'Компонент Tab1 деактивирован (deactivated)');
+                    }
+                }, 0);
+            }
+        });
+
+        // Компонент для вкладки 2
+        Vue.component('tab2', {
+            template: '<div><h3>Содержимое вкладки 2</h3><p>Это компонент вкладки 2. При переключении вкладок будет вызываться activated/deactivated.</p></div>',
+            mounted() {
+                // При первом монтировании также вызываем activated
+                var self = this;
+                setTimeout(function() {
+                    if (self.$root && self.$root.addLifecycleLog) {
+                        self.$root.addLifecycleLog('activated', 'Компонент Tab2 активирован (activated) - первое монтирование');
+                    }
+                }, 100);
+            },
+            activated() {
+                var self = this;
+                setTimeout(function() {
+                    if (self.$root && self.$root.addLifecycleLog) {
+                        self.$root.addLifecycleLog('activated', 'Компонент Tab2 активирован (activated)');
+                    }
+                }, 0);
+            },
+            deactivated() {
+                var self = this;
+                setTimeout(function() {
+                    if (self.$root && self.$root.addLifecycleLog) {
+                        self.$root.addLifecycleLog('deactivated', 'Компонент Tab2 деактивирован (deactivated)');
+                    }
+                }, 0);
+            }
+        });
+
+        // Проверяем, что Vue загружен
+        if (typeof Vue === 'undefined') {
+            console.error('Vue.js не загружен!');
+            document.body.innerHTML = '<h1 style="color: red;">Ошибка: Vue.js не загружен. Проверьте подключение к интернету.</h1>';
+        } else {
+            var app = new Vue({
+            el: '#app',
+            data: {
+                message: '',
+                counter: 0,
+                lifecycleLog: [],
+                isDestroyed: false,
+                activeTab: 'tab1',
+                isLogging: false
+            },
+            beforeCreate() {
+                // В beforeCreate методы ещё недоступны, поэтому логируем в консоль
+                console.log('beforeCreate: Экземпляр создаётся, данные и методы ещё недоступны');
+            },
+            created() {
+                // В created методы уже доступны, но логируем в mounted для безопасности
+                console.log('created: Экземпляр создан');
+            },
+            beforeMount() {
+                // Логируем в mounted для безопасности
+                console.log('beforeMount: Перед монтированием DOM');
+            },
+            mounted() {
+                // Все методы доступны, логируем все хуки, которые были вызваны ранее
+                this.addLifecycleLog('beforeCreate', 'beforeCreate: Экземпляр создавался, данные и методы были недоступны');
+                this.addLifecycleLog('created', 'created: Экземпляр создан, данные и методы доступны, DOM ещё не создан');
+                this.addLifecycleLog('beforeMount', 'beforeMount: Перед монтированием DOM, $el ещё не определён');
+                this.addLifecycleLog('mounted', 'mounted: DOM смонтирован, $el доступен, можно работать с DOM');
+                this.scrollLog();
+            },
+            beforeUpdate() {
+                // Не логируем автоматически, чтобы избежать бесконечного цикла
+                // Логирование будет происходить только при явных действиях пользователя
+            },
+            updated() {
+                // Не логируем автоматически, чтобы избежать бесконечного цикла
+                // Логирование будет происходить только при явных действиях пользователя
+            },
+            beforeDestroy() {
+                this.addLifecycleLog('beforeDestroy', 'beforeDestroy: Перед уничтожением экземпляра, компонент ещё полностью функционален');
+            },
+            destroyed() {
+                this.addLifecycleLog('destroyed', 'destroyed: Экземпляр уничтожен, все подписки удалены');
+                this.scrollLog();
+            },
+            errorCaptured(err, instance, info) {
+                var errorMsg = 'errorCaptured: Перехвачена ошибка - ' + (err ? err.message : 'Неизвестная ошибка');
+                this.addLifecycleLog('errorCaptured', errorMsg);
+                return false; // Продолжить распространение ошибки
+            },
+            methods: {
+                addLifecycleLog(hook, message) {
+                    try {
+                        var now = new Date();
+                        var pad = function(num, size) {
+                            var s = String(num);
+                            while (s.length < size) s = '0' + s;
+                            return s;
+                        };
+                        var hours = pad(now.getHours(), 2);
+                        var minutes = pad(now.getMinutes(), 2);
+                        var seconds = pad(now.getSeconds(), 2);
+                        var milliseconds = pad(now.getMilliseconds(), 3);
+                        var timestamp = hours + ':' + minutes + ':' + seconds + '.' + milliseconds;
+                        
+                        // Используем Vue.set для реактивности без триггера обновлений
+                        this.lifecycleLog.push({
+                            id: Date.now() + Math.random(),
+                            hook: hook,
+                            message: message,
+                            timestamp: timestamp
+                        });
+                    } catch (e) {
+                        console.error('Ошибка при логировании:', e);
+                    }
+                },
+                scrollLog() {
+                    this.$nextTick(() => {
+                        const logContainer = document.getElementById('logContainer');
+                        if (logContainer) {
+                            logContainer.scrollTop = logContainer.scrollHeight;
+                        }
+                    });
+                },
+                clearLogs() {
+                    this.lifecycleLog = [];
+                },
+                incrementCounter() {
+                    this.counter++;
+                },
+                decrementCounter() {
+                    this.counter--;
+                },
+                triggerUpdate() {
+                    // Явно триггерим обновление и логируем хуки
+                    this.addLifecycleLog('beforeUpdate', 'beforeUpdate: Перед обновлением DOM, данные изменились (явное обновление)');
+                    this.message = 'Обновлено: ' + new Date().toLocaleTimeString();
+                    this.counter++;
+                    var self = this;
+                    this.$nextTick(function() {
+                        self.addLifecycleLog('updated', 'updated: DOM обновлён после изменения данных (явное обновление)');
+                        self.scrollLog();
+                    });
+                },
+                destroyComponent() {
+                    if (confirm('Вы уверены, что хотите уничтожить компонент?')) {
+                        this.isDestroyed = true;
+                        this.$destroy();
+                    }
+                },
+                recreateComponent() {
+                    // Пересоздание компонента
+                    location.reload();
+                }
+            }
+            });
+        }
+
+        // Логирование в консоль браузера для дополнительной информации
+        console.log('=== Vue.js Lifecycle Hooks Demo ===');
+        console.log('Откройте консоль браузера для просмотра дополнительной информации о жизненном цикле');
+        
+        // Обработка ошибок загрузки
+        window.addEventListener('error', function(e) {
+            console.error('Ошибка загрузки:', e.message, e.filename, e.lineno);
+        });
+    </script>
+</body>
+</html>
+
