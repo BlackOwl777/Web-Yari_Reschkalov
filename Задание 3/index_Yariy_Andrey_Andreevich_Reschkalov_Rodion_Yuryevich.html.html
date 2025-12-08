@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Сайт‑визитка — вариант 07</title>
+</head>
+<body>
+
+<!-- Блок (div) — Область заголовка 1 (Header) -->
+<div id="header-area">
+  <h1>Ярий Андрей Андреевич, Речкалов Родион Юрьевич</h1>
+  <hr>
+</div>
+
+<!-- Остальной контент -->
+<div style="display: flex; align-items: flex-start; gap: 20px;">
+  <div style="flex: 0 0 35%; text-align: center;">
+    <img src="2025-09-19 15.46.57.jpg" alt="Фотография" width="280">
+  </div>
+  <div style="flex: 1;">
+    <h3>Персональные данные</h3>
+    <ul type="square">
+      <li><strong>Дата рождения (D.O.B):</strong> 24.04.2001, 12.01.2003</li>
+      <li><strong>Город:</strong> Москва</li>
+      <li><strong>Гражданство:</strong> РФ</li>
+      <li><strong>Семейное положение:</strong> не женат</li>
+      <li><strong>Владение языками:</strong> Русский, English</li>
+    </ul>
+  </div>
+</div>
+<hr>
+
+<div>
+  <h2>Контакты</h2>
+  <ol type="a">
+    <li>Телефон: +7 (900) 000-00-00</li>
+    <li>E‑mail: <a href="mailto:students@example.com?subject=Вопрос%20по%20резюме">students@example.com</a></li>
+    <li>Telegram: @students</li>
+    <li>GitHub: https://github.com/BlackOwl777/Web-Yari_Reschkalov  </li>
+    <li>Блог: example.com</li>
+  </ol>
+  <hr>
+</div>
+
+<div>
+  <h2>Гибкие навыки (Skills)</h2>
+  <ol type="i">
+    <li>Коммуникация и работа в команде</li>
+    <li>Тайм‑менеджмент</li>
+    <li>Самостоятельность и ответственность</li>
+    <li>Критическое мышление</li>
+    <li>Обучаемость</li>
+  </ol>
+  <hr>
+</div>
+
+<div>
+  <h2>Жёсткие навыки (Skills)</h2>
+  <ol type="I">
+    <li>HTML (базовая разметка без CSS/JS)</li>
+    <li>Linux: bash, сетевые утилиты</li>
+    <li>Сети: VLAN, VPN, NGFW (теория)</li>
+    <li>Python: автоматизация рутинных задач</li>
+    <li>Git: базовые операции</li>
+  </ol>
+  <hr>
+</div>
+
+<div>
+  <h2>Описание (Description)</h2>
+  <p>Мы студенты 5 курса.</p>
+  <hr>
+</div>
+
+<script>
+  (function () {
+    let cloned = false;
+    const headerArea = document.getElementById('header-area');
+
+    headerArea.addEventListener('mouseenter', function () {
+      if (cloned) return;
+
+      // Функция для клонирования одного узла 
+      function deepCloneElement(node) {
+        if (node.nodeType === Node.TEXT_NODE) {
+          return document.createTextNode(node.textContent);
+        }
+        if (node.nodeType !== Node.ELEMENT_NODE) {
+          return null;
+        }
+
+        const clonedNode = document.createElement(node.tagName);
+        
+        // Копируем атрибуты
+        for (let attr of node.attributes) {
+          clonedNode.setAttribute(attr.name, attr.value);
+        }
+
+        // Копируем дочерние узлы в цикле
+        for (let child of node.childNodes) {
+          const clonedChild = deepCloneElement(child);
+          if (clonedChild) {
+            clonedNode.appendChild(clonedChild);
+          }
+        }
+
+        return clonedNode;
+      }
+
+      // Создаём новый body-контейнер 
+      const container = document.createElement('div');
+
+      // Проходим по всем дочерним элементам body и клонируем каждый в цикле
+      for (let child of document.body.childNodes) {
+        const clonedChild = deepCloneElement(child);
+        if (clonedChild) {
+          container.appendChild(clonedChild);
+        }
+      }
+
+      // Убираем id из клонированной области заголовка
+      const clonedHeader = container.querySelector('#header-area');
+      if (clonedHeader) {
+        clonedHeader.id = '';
+      }
+
+      // Добавляем клон в конец body
+      document.body.appendChild(container);
+
+      cloned = true;
+    });
+  })();
+</script>
+</body>
+</html>
