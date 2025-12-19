@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Лабораторная №7 — Вариант 7 CMYK инверсия (Vue)</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <style>
+    body { font-family: sans-serif; margin: 20px; }
+    .container { display: flex; gap: 40px; }
+    .block { margin-bottom: 24px; }
+    canvas, svg { border: 1px solid #aaa; }
+    .canvas-wrap { margin-bottom: 10px; }
+    .histo-wrap { margin-top: 10px; }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div class="block">
+    <h2>Лабораторная работа №7 — вариант 7</h2>
+    <p>Загрузите JPG-изображение, получите оригинал и инверсию в CMYK,<br>а также гистограммы на SVG и направляющий слой.</p>
+    <input type="file" accept="image/jpeg,image/jpg,image/png" @change="onFileChange">
+  </div>
+  <div class="container">
+    <!-- Оригинал -->
+    <div>
+      <h3>Оригинал (Canvas)</h3>
+      <div class="canvas-wrap" style="position: relative;">
+        <canvas ref="originalCanvas" width="300" height="300"></canvas>
+        <svg width="300" height="300" style="position: absolute; top: 0; left: 0; pointer-events:none;">
+          <line x1="150" y1="0" x2="150" y2="300" stroke="red" stroke-width="2"/>
+        </svg>
+      </div>
+      <div class="histo-wrap">
+        <h4>Гистограмма (SVG)</h4>
+        <svg :width="histogramWidth" :height="histogramHeight" v-if="histogramOriginal.length">
+          <polyline :points="originalHistoPolyline" fill="none" stroke="#3377ff" stroke-width="2"/>
+          <line x1="0" :y1="histogramHeight/2" :x2="histogramWidth" :y2="histogramHeight/2" stroke="#ddd" stroke-dasharray="4 2"/>
+        </svg>
+      </div>
+    </div>
+    <!-- Инверсия CMYK -->
+    <div>
+      <h3>Инверсия в CMYK (Canvas)</h3>
+      <div class="canvas-wrap" style="position: relative;">
+        <canvas ref="invertedCanvas" width="300" height="300"></canvas>
+        <svg width="300" height="300" style="position: absolute; top: 0; left: 0; pointer-events:none;">
+          <line x1="150" y1="0" x2="150" y2="300" stroke="red" stroke-width="2"/>
+        </svg>
+      </div>
+      <div class="histo-wrap">
+        <h4>Гистограмма (SVG)</h4>
+        <svg :width="histogramWidth" :height="histogramHeight" v-if="histogramInverted.length">
+          <polyline :points="invertedHistoPolyline" fill="none" stroke="#33bb44" stroke-width="2"/>
+          <line x1="0" :y1="histogramHeight/2" :x2="histogramWidth" :y2="histogramHeight/2" stroke="#ddd" stroke-dasharray="4 2"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+const { createApp, ref, reactive, computed, onMounted, watch } = Vue;
+createApp({
+  setup() {
+    const originalCanvas = ref(null);
+    const invertedCanvas = ref(null);
+    const histogramHeight = 80, histogramWidth = 256;
+    const histogramOriginal = ref([]);
+    const histogramInverted = ref([]);
+    const imgData = reactive({ width: 0, height: 0 });
+    let lastImage = null;
+
+    // Histogram SVG point strings
+    const originalHistoPolyline = computed(() => histogramOriginal.value.length ?
+      histogramOriginal.value.map((v,i) => `${i},${histogramHeight-v}`).join(' '): '');
+    const invertedHistoPolyline = computed(() => histogramInverted.value.length ?
+      histogramInverted.value.map((v,i) => `${i},${histogramHeight-v}`).join(' '): '');
+
+    // MAIN: handle file
+    function onFileChange(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const img = new window.Image();
+        img.onload = () => processImage(img);
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function processImage(img) {
+      lastImage = img;
+      imgData.width = img.width > 300 ? 300 : img.width;
+      imgData.height = img.height > 300 ? 300 : img.height;
+      drawOriginal();
+      drawInverted();
+    }
+
+    function drawOriginal() {
+      const can = originalCanvas.value;
+      const ctx = can.getContext('2d');
+      ctx.clearRect(0,0,can.width,can.height);
+      ctx.drawImage(lastImage,0,0,imgData.width,imgData.height);
+      calcHistogram(ctx, imgData.width, imgData.height, histogramOriginal);
+    }
+
+    function drawInverted() {
+      const can = invertedCanvas.value;
+      const ctx = can.getContext('2d');
+      ctx.clearRect(0,0,can.width,can.height);
+      // Получаем данные оригинала
+      const orCtx = originalCanvas.value.getContext('2d');
+      const imgDataObj = orCtx.getImageData(0,0,imgData.width,imgData.height);
+      // Инверсия CMYK
+      for (let i=0; i<imgDataObj.data.length; i+=4) {
+        const r=imgDataObj.data[i], g=imgDataObj.data[i+1], b=imgDataObj.data[i+2];
+        // Преобразование в CMY (без учета K, для простоты визуализации)
+        let c = 255 - r;
+        let m = 255 - g;
+        let y = 255 - b;
+        // Инверсия (в CMYK каждое значение инвертируем еще раз)
+        c = 255-c; m = 255-m; y = 255-y;
+        // Возвращаем RGB для вывода на Canvas
+        imgDataObj.data[i]=255-c;
+        imgDataObj.data[i+1]=255-m;
+        imgDataObj.data[i+2]=255-y;
+      }
+      ctx.putImageData(imgDataObj,0,0);
+      calcHistogram(ctx, imgData.width, imgData.height, histogramInverted);
+    }
+
+    // Строим простую гистограмму по яркости (по каналу Y = 0.299R+0.587G+0.114B)
+    function calcHistogram(ctx, w, h, store) {
+      const img = ctx.getImageData(0,0,w,h);
+      let hist = new Array(256).fill(0);
+      for (let i=0; i<img.data.length; i+=4) {
+        const r=img.data[i], g=img.data[i+1], b=img.data[i+2];
+        const y = Math.round(0.299*r+0.587*g+0.114*b);
+        hist[y]++;
+      }
+      // scale hist to fit SVG height
+      const max = Math.max(...hist);
+      const scale = max>histogramHeight? (histogramHeight/max) : 1;
+      store.value = hist.map(v=>Math.round(v*scale));
+    }
+
+    return {
+      originalCanvas, invertedCanvas, histogramOriginal, histogramInverted,
+      onFileChange, histogramHeight, histogramWidth,
+      originalHistoPolyline, invertedHistoPolyline
+    };
+  }
+}).mount('#app');
+</script>
+</body>
+</html>
